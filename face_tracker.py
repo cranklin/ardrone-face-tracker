@@ -1,11 +1,4 @@
 #!/usr/bin/python
-
-'''
-Track a face using OpenCV.
-
-by Cranklin (http://www.cranklin.com)
-'''
-
 import sys
 import time
 import math
@@ -21,10 +14,10 @@ import cv
 # scale_factor=1.2, min_neighbors=2, flags=CV_HAAR_DO_CANNY_PRUNING,
 # min_size=<minimum possible face size
 
-min_size = (20,20)
+min_size = (25,25)
 image_scale = 2
 haar_scale = 1.2
-min_neighbors = 2
+min_neighbors = 4
 haar_flags = 0
 
 # For OpenCV image display
@@ -36,7 +29,8 @@ def track(img, threshold=100):
                 (-1,-1) if no centroid was found
                 None if user hit ESC
     '''
-    cascade = cv.Load("haarcascade_frontalface_default.xml")
+    cascade = cv.Load("haarcascade_frontalface_alt_tree.xml")
+    #cascade = cv.Load("haarcascade_frontalface_default.xml")
     gray = cv.CreateImage((img.width,img.height), 8, 1)
     small_img = cv.CreateImage((cv.Round(img.width / image_scale),cv.Round (img.height / image_scale)), 8, 1)
 
@@ -49,32 +43,32 @@ def track(img, threshold=100):
     cv.EqualizeHist(small_img, small_img)
 
     center = (-1,-1)
-    #import ipdb; ipdb.set_trace()
     if(cascade):
         t = cv.GetTickCount()
         # HaarDetectObjects takes 0.02s
         faces = cv.HaarDetectObjects(small_img, cascade, cv.CreateMemStorage(0), haar_scale, min_neighbors, haar_flags, min_size)
         t = cv.GetTickCount() - t
         if faces:
-            for ((x, y, w, h), n) in faces:
-                # the input to cv.HaarDetectObjects was resized, so scale the
-                # bounding box of each face and convert it to two CvPoints
-                pt1 = (int(x * image_scale), int(y * image_scale))
-                pt2 = (int((x + w) * image_scale), int((y + h) * image_scale))
-                cv.Rectangle(img, pt1, pt2, cv.RGB(255, 0, 0), 3, 8, 0)
-                #cv.Rectangle(img, (x,y), (x+w,y+h), 255)
-                # get the xy corner co-ords, calc the center location
-                x1 = pt1[0]
-                x2 = pt2[0]
-                y1 = pt1[1]
-                y2 = pt2[1]
-                centerx = x1+((x2-x1)/2)
-                centery = y1+((y2-y1)/2)
-                center = (centerx, centery)
+            faces.sort()
+            ((x, y, w, h), n) = faces[-1]
+            # the input to cv.HaarDetectObjects was resized, so scale the
+            # bounding box of each face and convert it to two CvPoints
+            pt1 = (int(x * image_scale), int(y * image_scale))
+            pt2 = (int((x + w) * image_scale), int((y + h) * image_scale))
+            cv.Rectangle(img, pt1, pt2, cv.RGB(255, 0, 0), 3, 8, 0)
+            #cv.Rectangle(img, (x,y), (x+w,y+h), 255)
+            # get the xy corner co-ords, calc the center location
+            x1 = pt1[0]
+            x2 = pt2[0]
+            y1 = pt1[1]
+            y2 = pt2[1]
+            centerx = x1+((x2-x1)/2)
+            centery = y1+((y2-y1)/2)
+            center = (centerx, centery)
 
     cv.NamedWindow(WINDOW_NAME, 1)
     cv.ShowImage(WINDOW_NAME, img)
-    
+
     if cv.WaitKey(5) == 27:
         center = None
     return center
