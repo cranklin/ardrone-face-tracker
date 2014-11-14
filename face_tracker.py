@@ -65,6 +65,10 @@ def track(img, threshold=100):
             centerx = x1+((x2-x1)/2)
             centery = y1+((y2-y1)/2)
             center = (centerx, centery)
+        else:
+            center = None
+    else:
+        center = None
 
     cv.NamedWindow(WINDOW_NAME, 1)
     cv.ShowImage(WINDOW_NAME, img)
