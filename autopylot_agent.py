@@ -52,9 +52,11 @@ def action(img_bytes, img_width, img_height, is_belly, ctrl_state, vbat_flying_p
         action.count = 0
         action.errx_1 = 0
         action.erry_1 = 0
+        action.errz_1 = 0
         action.phi_1 = 0
         action.gaz_1 = 0
         action.yaw_1 = 0
+        action.theta_1 = 0
 
     # Create full-color image from bytes
     image = cv.CreateImageHeader((img_width,img_height), cv.IPL_DEPTH_8U, 3)
@@ -69,6 +71,8 @@ def action(img_bytes, img_width, img_height, is_belly, ctrl_state, vbat_flying_p
         # Compute proportional distance (error) of centroid from image center
         errx =  _dst(ctr, 0, img_width)
         erry = -_dst(ctr, 1, img_height)
+        # use this if you want to make it come towards you
+        errz = _dst(ctr, 2, img_height)
 
         # Compute vertical, horizontal velocity commands based on PID control after first iteration
         if action.count > 0:
@@ -77,13 +81,17 @@ def action(img_bytes, img_width, img_height, is_belly, ctrl_state, vbat_flying_p
             # use this if you want to make it rotate to follow your face horizontally
             yaw = _pid(action.yaw_1, errx, action.errx_1, Kpx, Kix, Kdx)
             gaz = _pid(action.gaz_1, erry, action.erry_1, Kpy, Kiy, Kdy)
+            # use this if you want to make it come towards you
+            theta = _pid(action.theta_1, errz, action.errz_1, Kpy, Kiy, Kdy)
 
         # Remember PID variables for next iteration
         action.errx_1 = errx
         action.erry_1 = erry
+        action.errz_1 = errz
         action.phi_1 = phi
         action.gaz_1 = gaz
         action.yaw_1 = yaw
+        action.theta_1 = theta
         action.count += 1
 
     # Send control parameters back to drone

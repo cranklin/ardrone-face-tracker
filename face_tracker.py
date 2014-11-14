@@ -14,7 +14,7 @@ import cv
 # scale_factor=1.2, min_neighbors=2, flags=CV_HAAR_DO_CANNY_PRUNING,
 # min_size=<minimum possible face size
 
-min_size = (25,25)
+min_size = (20,20)
 image_scale = 2
 haar_scale = 1.2
 min_neighbors = 4
@@ -42,7 +42,7 @@ def track(img, threshold=100):
 
     cv.EqualizeHist(small_img, small_img)
 
-    center = (-1,-1)
+    center = (-1,-1,-1)
     if(cascade):
         t = cv.GetTickCount()
         # HaarDetectObjects takes 0.02s
@@ -64,10 +64,9 @@ def track(img, threshold=100):
             y2 = pt2[1]
             centerx = x1+((x2-x1)/2)
             centery = y1+((y2-y1)/2)
-            center = (centerx, centery)
-        else:
-            center = None
-    else:
+            center = (centerx, centery, h*3)
+
+    if cmp(center, (-1,-1,-1)) == 0:
         center = None
 
     cv.NamedWindow(WINDOW_NAME, 1)
